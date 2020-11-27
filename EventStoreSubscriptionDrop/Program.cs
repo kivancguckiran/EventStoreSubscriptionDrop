@@ -7,7 +7,7 @@ namespace EventStoreSubscriptionDrop
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var connectionString = "esdb://localhost:2113?Tls=false";
 
@@ -45,7 +45,7 @@ namespace EventStoreSubscriptionDrop
                     throw;
             }
 
-            subscriptionsClient.SubscribeAsync(
+            await subscriptionsClient.SubscribeAsync(
                 eventStoreStreamName,
                 eventStoreGroupName,
                 (sub, @event, _, token) =>
@@ -56,15 +56,12 @@ namespace EventStoreSubscriptionDrop
                 (sub, reason, e) =>
                 {
                     Console.WriteLine($"Sub dropped with {reason}. {e}");
-                }).Wait();
+                });
 
-            Task.Run(() =>
+            while (true)
             {
-                while (true)
-                {
-                    Task.Delay(1000).Wait();
-                }
-            }).Wait();
+                await Task.Delay(1000);
+            }
         }
     }
 }
