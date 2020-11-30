@@ -69,7 +69,8 @@ namespace EventStoreSubscriptionDrop
                 (sub, reason, e) =>
                 {
                     Console.WriteLine($"Sub dropped with {reason}. {e}");
-                });
+                },
+                autoAck: false);
 
             while (true)
             {
