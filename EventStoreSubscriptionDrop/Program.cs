@@ -13,15 +13,28 @@ namespace EventStoreSubscriptionDrop
 
             var settings = EventStoreClientSettings
                 .Create(connectionString);
+            
+            // Write some events to a random stream
+            var writeClient = new EventStoreClient(settings);
 
+            var eventStoreStreamName = $"Test-{Uuid.NewUuid()}";
+            const string eventStoreGroupName = "EventStoreSubscriptionDrop";
+
+            for (var i = 0; i < 1000; i++)
+                await writeClient.AppendToStreamAsync(
+                    eventStoreStreamName,
+                    StreamState.Any,
+                    new []
+                    {
+                        new EventData(Uuid.NewUuid(), "DummyEvent", new byte[] {})
+                    });
+
+            // create a subscription to the stream
             var subscriptionSettings = new PersistentSubscriptionSettings(
                     messageTimeout: TimeSpan.FromSeconds(30),
-                    namedConsumerStrategy: SystemConsumerStrategies.Pinned,
+                    namedConsumerStrategy: SystemConsumerStrategies.RoundRobin,
                     resolveLinkTos: true,
                     startFrom: StreamPosition.Start);
-
-            var eventStoreStreamName = "all";
-            var eventStoreGroupName = "EventStoreSubscriptionDrop";
 
             var subscriptionsClient = new EventStorePersistentSubscriptionsClient(settings);
 
